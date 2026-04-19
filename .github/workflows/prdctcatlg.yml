@@ -38,15 +38,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Run golangci-lint
-      run: |
-          go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-          echo "$HOME/go/bin" >> $GITHUB_PATH
-          export PATH=$PATH:$HOME/go/bin
-          golangci-lint run src/product-catalog/...  
+        - name: checkout code
+          uses: actions/checkout@v4
+        
+        - name: Setup Go 1.22
+          uses: actions/setup-go@v2
+          with:
+           go-version: 1.22
+        
+        - name: Run golangci-lint
+          uses: golangci/golangci-lint-action@v6
+          with:
+            version: v1.55.2
+            run: golangci-lint run
+            working-directory: src/product-catalog
 
   docker:
     runs-on: ubuntu-latest
@@ -69,7 +74,7 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         context: src/product-catalog
-        file: Dockerfile
+        file: src/product-catalog/Dockerfile
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/product-catalog-service:${{ github.run_id }}
    
